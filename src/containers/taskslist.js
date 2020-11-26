@@ -74,7 +74,7 @@ export default function TasksList() {
               <Drawer.Title>{item?.name}</Drawer.Title>
             </Drawer.Head>
             <Drawer.Body>
-              <Container data={prepare(item.body)} showInvalid />
+              <Container data={prepare(item.body, item.withSign)} showInvalid />
             </Drawer.Body>
           </Drawer.Layout>
         )}

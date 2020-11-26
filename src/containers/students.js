@@ -91,7 +91,10 @@ export default function Students() {
             >
               <Card.Title>{item.name}</Card.Title>
               <Card.Subtitle>
-                <Badge>{item.className}</Badge>
+                <Groups>
+                  <Badge>класс: {item.className}</Badge>
+                  <Badge>пароль: {item.pwd}</Badge>
+                </Groups>
               </Card.Subtitle>
             </Card>
           ))}

@@ -83,16 +83,16 @@ export class DB {
 
   // tasks
 
-  addTask(name, body) {
+  addTask(name, body, withSign) {
     let transaction = this.db.transaction("tasks", "readwrite");
     let tasks = transaction.objectStore("tasks");
-    tasks.add({ name, body });
+    tasks.add({ name, body, withSign });
   }
 
-  updatetask(id, name, body) {
+  updatetask(id, name, body, withSign) {
     let transaction = this.db.transaction("tasks", "readwrite");
     let tasks = transaction.objectStore("tasks");
-    tasks.put({ id: parseInt(id, 10), name, body });
+    tasks.put({ id: parseInt(id, 10), name, body, withSign });
   }
 
   async getTasks() {
@@ -137,7 +137,7 @@ export class DB {
   addStudent(data) {
     let transaction = this.db.transaction("students", "readwrite");
     let students = transaction.objectStore("students");
-    students.add(data);
+    students.add({ ...data, login: data.name });
   }
 
   async getStudents() {
@@ -237,34 +237,22 @@ export class DB {
   // auth
 
   async getStudentsByLogin(login) {
-    console.log("getStudentsByLogin 1", login);
     return new Promise((resolve, reject) => {
-      try {
-        console.log("getStudentsByLogin 1.1", login);
-        let transaction = this.db.transaction(["students"]);
+      let transaction = this.db.transaction(["students"]);
 
-        console.log("getStudentsByLogin 1.2", login);
-        let students = transaction.objectStore("students");
+      let students = transaction.objectStore("students");
 
-        console.log("getStudentsByLogin 1.3", login);
-        let studentLoginIndex = students.index("login_idx");
-        console.log("getStudentsByLogin 1.4", login);
-        let studentLoginReq = studentLoginIndex.getAll(login);
+      let studentLoginIndex = students.index("login_idx");
+      let studentLoginReq = studentLoginIndex.getAll(login);
 
-        console.log("getStudentsByLogin 2", login);
-        studentLoginReq.onerror = console.log;
-        studentLoginReq.onsuccess = () => {
-          console.log("getStudentsByLogin 3", login, studentLoginReq.result);
-          resolve(studentLoginReq.result);
-        };
-      } catch (e) {
-        console.log(e);
-      }
+      studentLoginReq.onerror = reject;
+      studentLoginReq.onsuccess = () => {
+        resolve(studentLoginReq.result);
+      };
     });
   }
 
   async getTeachersByLogin(login) {
-    console.log("getTeachersByLogin 1", login);
     return new Promise((resolve, reject) => {
       let transaction = this.db.transaction(["teachers"]);
 
@@ -273,22 +261,18 @@ export class DB {
       let teacheLoginIndex = teachers.index("login_idx");
       let teacherLoginReq = teacheLoginIndex.getAll(login);
 
-      console.log("getTeachersByLogin 2", login);
       teacherLoginReq.onerror = reject;
       teacherLoginReq.onsuccess = () => {
-        console.log("getTeachersByLogin 3", login, teacherLoginReq.result);
         resolve(teacherLoginReq.result);
       };
     });
   }
 
   async auth(login, pwd) {
-    console.log("auth");
     const students = await this.getStudentsByLogin(login);
     const teachers = await this.getTeachersByLogin(login);
     const all = [...students, ...teachers];
     const data = all.find((a) => a.pwd === pwd);
-    console.log(data, login, pwd);
     if (data) {
       return data;
     }

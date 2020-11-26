@@ -6,11 +6,16 @@ export const AddStudentForm = (props) => {
   const { onOk } = props;
 
   const [name, setName] = useState("");
+  const [pwd, setPwd] = useState("");
   const [className, setClassName] = useState("");
   const [suggestsClass, setSuggestsClass] = useState([]);
 
   const handle = useCallback((e, data) => {
     setName(data.value);
+  }, []);
+
+  const handlePwd = useCallback((e, data) => {
+    setPwd(data.value);
   }, []);
 
   const handleClassName = useCallback((e, data) => {
@@ -28,9 +33,9 @@ export const AddStudentForm = (props) => {
 
   const handleClick = useCallback(
     (e) => {
-      onOk({ name, className: className.name });
+      onOk({ name, className: className.name, pwd });
     },
-    [onOk, name, className]
+    [onOk, name, className, pwd]
   );
 
   return (
@@ -51,6 +56,12 @@ export const AddStudentForm = (props) => {
             onChange={handleClassName}
             onSelect={handleClassName}
           />
+        </FormField.Content>
+      </FormField>
+      <FormField style={{ width: "100%" }}>
+        <FormField.Label>Пароль</FormField.Label>
+        <FormField.Content>
+          <Input value={pwd} onChange={handlePwd} />
         </FormField.Content>
       </FormField>
       <Button design="accent" onClick={handleClick}>

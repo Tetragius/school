@@ -1,19 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { Card, Grid, Groups, Button, Badge } from "vienna-ui";
 import { db } from "../App";
+import { useAuth } from "../services/Auth";
 
 export default function Student() {
-  const [name, setName] = useState("");
   const [tasks, setTasks] = useState([]);
-  const { id } = useParams();
+  const { id } = useAuth();
 
   const history = useHistory();
 
   useEffect(() => {
-    db.getStudent(id).then((student) => {
-      setName(student.name);
-    });
     db.getTasksForStudent(id).then(setTasks);
   }, [id]);
 
@@ -21,7 +18,6 @@ export default function Student() {
     <Grid.Row align="center">
       <Grid.Col size={10}>
         <Groups design="vertical">
-          <Card>{`${name}`}</Card>
           {tasks.map((task, idx) => (
             <Card
               title={task.name}

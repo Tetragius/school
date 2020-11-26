@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Card, Switcher, Modal, Button, Tabs, Groups } from "vienna-ui";
+import { Card, Switcher, Modal, Button, Tabs, Groups, Hint } from "vienna-ui";
 import styled from "styled-components";
 import { useParams, useHistory } from "react-router-dom";
 import { Container } from "../components/container";
@@ -17,8 +17,9 @@ const I = styled.i`
 export default function Creator() {
   const [task, setTask] = useState({ name: "Новое задание", body: "" });
 
-  const [data, setData] = useState(prepare(task.body));
   const [showInvalid, setShowInvalid] = useState(false);
+  const [withSign, setWithSign] = useState(true);
+  const [data, setData] = useState(prepare(task.body, withSign));
   const [tab, setTab] = useState("edit");
   const [showSaveDialog, setShowSaveDialog] = useState(false);
 
@@ -29,7 +30,8 @@ export default function Creator() {
     if (id) {
       db.getTask(id).then((task) => {
         setTask(task);
-        setData(prepare(task.body));
+        setWithSign(task.withSign);
+        setData(prepare(task.body, task.withSign));
       });
     }
   }, [id]);
@@ -61,36 +63,55 @@ export default function Creator() {
   const handleSave = useCallback(
     (name) => {
       if (!id) {
-        db.addTask(name, task.body);
+        db.addTask(name, task.body, withSign);
       } else {
-        db.updatetask(id, name, task.body);
+        db.updatetask(id, name, task.body, withSign);
       }
       setShowSaveDialog(false);
       history.push("/list");
     },
-    [task, id, history]
+    [task, id, history, withSign]
   );
 
-  console.log(tab);
+  const footerPart =
+    tab === "edit" ? (
+      <Groups>
+        <Hint
+          anchor="auto"
+          header="Справка"
+          content={
+            <I>
+              Выделите текст или область.
+              <ul>
+                <li>
+                  Нажмите <b>CTRL+Q</b> - пропущеные буквы
+                </li>
+                <li>
+                  Нажмите <b>CTRL+W</b> - слитно/раздельно
+                </li>
+              </ul>
+            </I>
+          }
+        />
+        <Switcher
+          checked={withSign}
+          onChange={(e, data) => setWithSign(data.value)}
+        >
+          Учитывать знаки
+        </Switcher>
+      </Groups>
+    ) : (
+      <Switcher checked={showInvalid} onChange={handleCheckbox}>
+        Показать ошибки
+      </Switcher>
+    );
 
   return (
     <>
       <Card
         footer={
           <Groups justifyContent="flex-end">
-            {tab === "edit" && (
-              <I>
-                Выделите текст или область.
-                <ul>
-                  <li>
-                    Нажмите <b>CTRL+Q</b> - пропущеные буквы
-                  </li>
-                  <li>
-                    Нажмите <b>CTRL+W</b> - слитно/раздельно
-                  </li>
-                </ul>
-              </I>
-            )}
+            {footerPart}
             <Button design="accent" onClick={handleShowDialog}>
               Сохранить
             </Button>
@@ -109,7 +130,11 @@ export default function Creator() {
             style={{ paddingTop: "16px", paddingBottom: "16px" }}
           >
             <div style={{ width: "1024px", height: "608px" }}>
-              <Redactor onChange={handle} value={task.body} />
+              <Redactor
+                onChange={handle}
+                value={task.body}
+                withSign={withSign}
+              />
             </div>
           </Groups>
         )}
@@ -118,9 +143,6 @@ export default function Creator() {
             design="vertical"
             style={{ paddingTop: "16px", paddingBottom: "16px" }}
           >
-            <Switcher checked={showInvalid} onChange={handleCheckbox}>
-              Показать ошибки
-            </Switcher>
             <div style={{ width: "1024px", height: "608px" }}>
               <Container
                 data={data}
@@ -134,7 +156,7 @@ export default function Creator() {
       <Modal isOpen={showSaveDialog} onClose={() => setShowSaveDialog(false)}>
         <Modal.Layout>
           <Modal.Head>
-            <Modal.Title>Добавить задание</Modal.Title>
+            <Modal.Title>Сохранить задание</Modal.Title>
           </Modal.Head>
           <Modal.Body>
             <SaveTaskForm onOk={handleSave} name={task.name} />

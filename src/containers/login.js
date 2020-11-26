@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import {
   Groups,
@@ -8,17 +8,18 @@ import {
   Input,
   Button
 } from "vienna-ui";
-import { AuthProvider } from "../services/Auth";
+import { AuthProvider, useAuth } from "../services/Auth";
 
 export default function Login() {
   const history = useHistory();
   const [login, setLogin] = useState("");
   const [pwd, setPwd] = useState("");
   const [loading, setLoading] = useState(false);
+  const { id: userId } = useAuth();
 
   const loginProcess = useCallback(() => {
     setLoading(true);
-    console.log(1);
+
     AuthProvider.auth(login, pwd)
       .then(() => {
         setLoading(false);
@@ -29,7 +30,11 @@ export default function Login() {
       });
   }, [login, pwd, history]);
 
-  console.log(login, pwd);
+  useEffect(() => {
+    if (userId) {
+      history.replace("/");
+    }
+  }, [userId, history]);
 
   return (
     <div

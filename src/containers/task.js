@@ -16,11 +16,11 @@ export default function Task() {
   const [data, setData] = useState();
   const [showErrors, setShowErrors] = useState(false);
   const { id } = useParams();
-  const { userId } = useAuth();
+  const { id: userId } = useAuth();
 
   useEffect(() => {
     db.getTasksForStudent(userId).then((val) => {
-      const task = val.find((v) => v.finished);
+      const task = val.find((v) => v.finished && v.id === parseInt(id, 10));
       if (task) {
         setTask(task);
         setData(task.result);
@@ -28,7 +28,7 @@ export default function Task() {
       } else {
         db.getTask(id).then((task) => {
           setTask(task);
-          setData(prepare(task.body));
+          setData(prepare(task.body, task.withSign));
         });
       }
     });

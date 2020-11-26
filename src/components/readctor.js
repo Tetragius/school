@@ -33,8 +33,10 @@ const getCorrectValue = (type, str) => {
   }
 };
 
-export const prepare = (str) => {
-  const regexp = /\[.*?\]|\{.*?\}|[,:\-;"] |[а-я]+ | |\n/gim;
+export const prepare = (str, withSign = true) => {
+  const regexp = withSign
+    ? /\[.*?\]|\{.*?\}|[,:\-;"] |[а-я]+ | |\n/gim
+    : /\[.*?\]|\{.*?\}[а-я]+ | |\n/gim;
   let old = 0;
   let tmp = regexp.exec(str);
   const tmpData = [];
@@ -63,13 +65,13 @@ export const prepare = (str) => {
 };
 
 export const Redactor = (props) => {
-  const { onChange, value } = props;
+  const { onChange, value, withSign = true } = props;
 
   const handle = useCallback(
     (e) => {
-      onChange(e.target.value, prepare(e.target.value));
+      onChange(e.target.value, prepare(e.target.value, withSign));
     },
-    [onChange]
+    [onChange, withSign]
   );
 
   const handleKey = useCallback(
@@ -78,16 +80,16 @@ export const Redactor = (props) => {
         e.preventDefault();
         const selection = document.getSelection();
         e.target.setRangeText("[" + selection.toString() + "]");
-        onChange(e.target.value, prepare(e.target.value));
+        onChange(e.target.value, prepare(e.target.value, withSign));
       }
       if (e.ctrlKey && e.key === "w") {
         e.preventDefault();
         const selection = document.getSelection();
         e.target.setRangeText("{" + selection.toString() + "}");
-        onChange(e.target.value, prepare(e.target.value));
+        onChange(e.target.value, prepare(e.target.value, withSign));
       }
     },
-    [onChange]
+    [onChange, withSign]
   );
 
   return (
