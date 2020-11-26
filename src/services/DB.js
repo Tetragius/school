@@ -5,7 +5,7 @@ export class DB {
 
   async init() {
     return new Promise((resolve, reject) => {
-      this.openRequest = indexedDB.open("school", 4);
+      this.openRequest = indexedDB.open("school", 5);
       this.openRequest.onsuccess = this.success.bind(this, resolve);
       this.openRequest.onupgradeneeded = this.upgradeneeded.bind(this);
     });
@@ -30,6 +30,46 @@ export class DB {
         autoIncrement: true
       });
     }
+    if (!this.db.objectStoreNames.contains("classes")) {
+      let classes = this.db.createObjectStore("classes", {
+        keyPath: "id",
+        autoIncrement: true
+      });
+      classes.createIndex("name_idx", "name");
+    }
+  }
+
+  // classes
+
+  addClass(name) {
+    let transaction = this.db.transaction("classes", "readwrite");
+    let classes = transaction.objectStore("classes");
+    classes.add({ name });
+  }
+
+  async getClasses() {
+    return new Promise((resolve, reject) => {
+      let transaction = this.db.transaction("classes");
+      let classes = transaction.objectStore("classes");
+      let request = classes.getAll();
+      request.onerror = reject;
+      request.onsuccess = (e) => {
+        resolve(request.result);
+      };
+    });
+  }
+
+  async getClassByName(name) {
+    return new Promise((resolve, reject) => {
+      let transaction = this.db.transaction("classes");
+      let classes = transaction.objectStore("classes");
+      let nameIndex = classes.index("name_idx");
+      let request = nameIndex.get(name);
+      request.onerror = reject;
+      request.onsuccess = (e) => {
+        resolve(request.result);
+      };
+    });
   }
 
   // tasks
@@ -70,12 +110,25 @@ export class DB {
     });
   }
 
+  async removeTask(id) {
+    return new Promise((resolve, reject) => {
+      let transaction = this.db.transaction("tasks", "readwrite");
+      let tasks = transaction.objectStore("tasks");
+      let request = tasks.get(parseInt(id, 10));
+      request.onerror = reject;
+      request.onsuccess = (e) => {
+        tasks.delete(parseInt(id, 10));
+        resolve();
+      };
+    });
+  }
+
   // students
 
-  addStudent(name) {
+  addStudent(data) {
     let transaction = this.db.transaction("students", "readwrite");
     let students = transaction.objectStore("students");
-    students.add({ name });
+    students.add(data);
   }
 
   async getStudents() {
@@ -86,6 +139,31 @@ export class DB {
       request.onerror = reject;
       request.onsuccess = (e) => {
         resolve(request.result);
+      };
+    });
+  }
+
+  async getStudent(id) {
+    return new Promise((resolve, reject) => {
+      let transaction = this.db.transaction("students");
+      let students = transaction.objectStore("students");
+      let request = students.get(parseInt(id, 10));
+      request.onerror = reject;
+      request.onsuccess = (e) => {
+        resolve(request.result);
+      };
+    });
+  }
+
+  async removeStudent(id) {
+    return new Promise((resolve, reject) => {
+      let transaction = this.db.transaction("students", "readwrite");
+      let students = transaction.objectStore("students");
+      let request = students.get(parseInt(id, 10));
+      request.onerror = reject;
+      request.onsuccess = (e) => {
+        students.delete(id);
+        resolve();
       };
     });
   }
@@ -104,6 +182,24 @@ export class DB {
     };
   }
 
+  updateTaskForStudent(studentId, taskId, result) {
+    let transaction = this.db.transaction("students", "readwrite");
+    let students = transaction.objectStore("students");
+    let request = students.get(parseInt(studentId, 10));
+    request.onsuccess = (e) => {
+      const student = request.result;
+      const index = student.tasks.findIndex(
+        (t) => t.id === parseInt(taskId, 10)
+      );
+      student.tasks[index] = {
+        id: parseInt(taskId, 10),
+        finished: true,
+        result
+      };
+      students.put({ id: parseInt(studentId, 10), ...student });
+    };
+  }
+
   async getTasksForStudent(studentId) {
     return new Promise((resolve) => {
       let transaction = this.db.transaction("students", "readwrite");
@@ -114,11 +210,17 @@ export class DB {
         if (!student.tasks) {
           student.tasks = [];
         }
-        Promise.all(student.tasks.map((task) => this.getTask(task.id))).then(
-          (tasks) => {
-            resolve(tasks);
-          }
-        );
+        Promise.all(
+          student.tasks.map((task) => {
+            return this.getTask(task.id).then((t) => ({
+              ...t,
+              finished: task.finished,
+              result: task.result
+            }));
+          })
+        ).then((tasks) => {
+          resolve(tasks);
+        });
       };
     });
   }

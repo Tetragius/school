@@ -1,7 +1,5 @@
 import React, { useCallback, useState } from "react";
-import styled from "styled-components";
-
-const Box = styled.span``;
+import { Input, Button, Groups, FormField, Spinner } from "vienna-ui";
 
 export const SaveTaskForm = (props) => {
   const { onOk, name } = props;
@@ -20,16 +18,16 @@ export const SaveTaskForm = (props) => {
   );
 
   return (
-    <Box>
-      <label>
-        <span>Нзвание: </span>
-        <input value={_name} onChange={handle} />
-      </label>
-      <br />
-      <br />
-      <button style={{ float: "right" }} onClick={handleClick}>
-        Ок
-      </button>
-    </Box>
+    <Groups design="vertical" style={{ width: "300px" }}>
+      <FormField style={{ width: "100%" }}>
+        <FormField.Label>Нзвание</FormField.Label>
+        <FormField.Content>
+          <Input value={_name} onChange={handle} />
+        </FormField.Content>
+      </FormField>
+      <Button design="accent" onClick={handleClick}>
+        Сохранить
+      </Button>
+    </Groups>
   );
 };

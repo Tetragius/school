@@ -1,23 +1,40 @@
 import React from "react";
-import styled from "styled-components";
 import { useHistory } from "react-router-dom";
-const Box = styled.div``;
+import { Sidebar } from "vienna-ui";
+import { useAuth } from "../services/Auth";
 
 export default function Main() {
   const history = useHistory();
+  const { userId } = useAuth();
 
   return (
-    <Box>
-      <input
-        type="button"
-        value="Задания"
-        onClick={() => history.push("/list")}
-      />
-      <input
-        type="button"
-        value="Класс"
-        onClick={() => history.push("/students")}
-      />
-    </Box>
+    <Sidebar header={null}>
+      {!userId && (
+        <>
+          <Sidebar.Item
+            active={history.location.pathname.startsWith("/list")}
+            onClick={() => history.push("/list")}
+          >
+            Задания
+          </Sidebar.Item>
+          <Sidebar.Item
+            active={history.location.pathname === "/students"}
+            onClick={() => history.push("/students")}
+          >
+            Ученики
+          </Sidebar.Item>
+        </>
+      )}
+      {userId && (
+        <>
+          <Sidebar.Item
+            active={history.location.pathname.startsWith("/student")}
+            onClick={() => history.push(`/student/${userId}`)}
+          >
+            Задания
+          </Sidebar.Item>
+        </>
+      )}
+    </Sidebar>
   );
 }

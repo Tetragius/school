@@ -1,75 +1,50 @@
 import React, { useCallback, useEffect, useState } from "react";
-import styled from "styled-components";
-import { useHistory } from "react-router-dom";
+import { Card, Modal, Grid, Groups, Drawer, Button, Badge } from "vienna-ui";
 import { db } from "../App";
-import { Modal } from "../components/modal";
 import { AddStudentForm } from "../forms/addStudent";
+import { Container } from "../components/container";
 import { AddtaskToStudentForm } from "../forms/addTaskToStudent";
-
-const Box = styled.div`
-  display: flex;
-  width: 100%;
-  height: 100%;
-`;
-
-const Left = styled.div`
-  width: 50%;
-  height: 100%;
-  border-right: 1px solid gray;
-  padding: 16px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-`;
-
-const LeftCenter = styled.div`
-  width: 100%;
-  height: calc(100% - 48px);
-  display: flex;
-  flex-direction: column;
-`;
-
-const Item = styled.div`
-  border: 1px solid gray;
-  box-sizing: border-box;
-  padding: 8px;
-  transition: all 0.2s;
-  cursor: pointer;
-  margin-bottom: 8px;
-  &:hover {
-    background: #c9c9c9;
-  }
-`;
-
-const Right = styled.div`
-  width: 50%;
-  height: 100%;
-  padding: 16px;
-  box-sizing: border-box;
-`;
-
-const RightCenter = styled.div`
-  width: 100%;
-  height: calc(100% - 48px);
-`;
 
 export default function Students() {
   const [studentId, setStudentId] = useState();
   const [list, setList] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [task, setTask] = useState();
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showDrawer, setShowDrawer] = useState(false);
+  const [check, showCheck] = useState(false);
   const [showAddTaskDialog, setShowAddTaskDialog] = useState(false);
-
-  const history = useHistory();
 
   useEffect(() => {
     db.getStudents().then(setList);
   }, []);
 
-  const handleSave = useCallback((name) => {
-    db.addStudent(name);
+  const handleSave = useCallback((data) => {
+    db.addStudent(data);
     setShowSaveDialog(false);
     db.getStudents().then(setList);
+    db.getClassByName(data.className).then((c) => {
+      if (!c) {
+        db.addClass(data.className);
+      }
+    });
+  }, []);
+
+  const getTasks = useCallback((id) => {
+    setStudentId(id);
+    db.getTasksForStudent(id).then(setTasks);
+  }, []);
+
+  const showTasks = useCallback(
+    (id) => {
+      setShowDrawer(true);
+      getTasks(id);
+    },
+    [getTasks]
+  );
+
+  const removeHandler = useCallback((id) => {
+    db.removeStudent(id).then(() => db.getStudents().then(setList));
   }, []);
 
   const handleAddTask = useCallback(
@@ -81,63 +56,117 @@ export default function Students() {
     [studentId]
   );
 
-  const getTasks = useCallback((id) => {
-    setStudentId(id);
-    db.getTasksForStudent(id).then(setTasks);
+  const openCheck = useCallback((task) => {
+    showCheck(true);
+    setTask(task);
   }, []);
 
   return (
-    <Box>
-      <Left>
-        <span style={{ display: "flex", alignItems: "center" }}>
-          <h1>Ученики |</h1>
-          &nbsp;
-          <input
-            type="button"
-            value="На главную"
-            onClick={() => history.push("/")}
-          />
-          &nbsp;
-          <input
-            type="button"
-            value="Добавить"
-            onClick={() => setShowSaveDialog(true)}
-          />
-        </span>
-        <LeftCenter>
+    <Grid.Row align="center">
+      <Grid.Col size={10}>
+        <Groups design="vertical" style={{ padding: "16px" }}>
+          <Card>
+            <Card.Title>
+              <Groups justifyContent="flex-end">
+                <Button design="accent" onClick={() => setShowSaveDialog(true)}>
+                  Добавить
+                </Button>
+              </Groups>
+            </Card.Title>
+          </Card>
           {list.map((item, idx) => (
-            <Item key={idx} onClick={() => getTasks(item.id)}>
-              {item.name}
-            </Item>
+            <Card
+              key={idx}
+              footer={
+                <Groups justifyContent="flex-end">
+                  <Button onClick={() => showTasks(item.id)}>Задания</Button>
+                  <Button
+                    design="critical"
+                    onClick={() => removeHandler(item.id)}
+                  >
+                    Удалить
+                  </Button>
+                </Groups>
+              }
+            >
+              <Card.Title>{item.name}</Card.Title>
+              <Card.Subtitle>
+                <Badge>{item.className}</Badge>
+              </Card.Subtitle>
+            </Card>
           ))}
-        </LeftCenter>
-      </Left>
-      <Right>
-        <span style={{ display: "flex", alignItems: "center" }}>
-          <h1>Задания |</h1>
-          &nbsp;
-          <input
-            type="button"
-            value="Добавить"
-            onClick={() => setShowAddTaskDialog(true)}
-          />
-        </span>
-        <RightCenter>
-          {tasks.map((task, idx) => (
-            <Item key={idx}>{task.name}</Item>
-          ))}
-        </RightCenter>
-      </Right>
-      {showSaveDialog && (
-        <Modal onClose={() => setShowSaveDialog(false)}>
-          <AddStudentForm onOk={handleSave} />
-        </Modal>
-      )}
-      {showAddTaskDialog && (
-        <Modal onClose={() => setShowAddTaskDialog(false)}>
-          <AddtaskToStudentForm onOk={handleAddTask} />
-        </Modal>
-      )}
-    </Box>
+        </Groups>
+      </Grid.Col>
+      <Drawer isOpen={showDrawer} onClose={() => setShowDrawer(false)}>
+        <Drawer.Layout>
+          <Drawer.Head>
+            <Drawer.Title>Задания ученика</Drawer.Title>
+          </Drawer.Head>
+          <Drawer.Body scroll={true}>
+            <Groups design="vertical">
+              {tasks.map((task, idx) => (
+                <Card
+                  key={idx}
+                  title={task?.name}
+                  footer={
+                    task.finished && (
+                      <Button onClick={() => openCheck(task)}>
+                        Просмотреть
+                      </Button>
+                    )
+                  }
+                >
+                  <Card.Subtitle>
+                    <Badge>
+                      {task.finished ? "выполнено" : "не выполнено"}
+                    </Badge>
+                  </Card.Subtitle>
+                </Card>
+              ))}
+            </Groups>
+          </Drawer.Body>
+          <Drawer.Footer>
+            <Button design="accent" onClick={() => setShowAddTaskDialog(true)}>
+              Добавить
+            </Button>
+          </Drawer.Footer>
+        </Drawer.Layout>
+      </Drawer>
+      <Modal isOpen={showSaveDialog} onClose={() => setShowSaveDialog(false)}>
+        <Modal.Layout>
+          <Modal.Head>
+            <Modal.Title>Добавить ученика</Modal.Title>
+          </Modal.Head>
+          <Modal.Body>
+            <AddStudentForm onOk={handleSave} />
+          </Modal.Body>
+        </Modal.Layout>
+      </Modal>
+      <Modal
+        isOpen={showAddTaskDialog}
+        onClose={() => setShowAddTaskDialog(false)}
+      >
+        <Modal.Layout>
+          <Modal.Head>
+            <Modal.Title>Добавить задание</Modal.Title>
+          </Modal.Head>
+          <Modal.Body>
+            <AddtaskToStudentForm onOk={handleAddTask} />
+          </Modal.Body>
+        </Modal.Layout>
+      </Modal>
+      <Modal isOpen={check} onClose={() => showCheck(false)}>
+        <Modal.Layout>
+          <Modal.Head>
+            <Modal.Title>{task?.name}</Modal.Title>
+          </Modal.Head>
+          <Modal.Body>
+            <div style={{ width: "1024px", height: "608px" }}>
+              <Container data={task?.result} showInvalid />
+            </div>
+          </Modal.Body>
+        </Modal.Layout>
+      </Modal>
+    </Grid.Row>
   );
 }

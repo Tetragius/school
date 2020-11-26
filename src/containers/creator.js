@@ -1,51 +1,17 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { Card, Switcher, Modal, Button, Tabs, Groups } from "vienna-ui";
 import styled from "styled-components";
 import { useParams, useHistory } from "react-router-dom";
 import { Container } from "../components/container";
 import { Redactor, prepare } from "../components/readctor";
-import { Modal } from "../components/modal";
 import { SaveTaskForm } from "../forms/saveTask";
 import { db } from "../App";
 
-const Box = styled.div`
-  display: flex;
-  width: 100%;
-  height: 100%;
-`;
-
-const Left = styled.div`
-  width: 50%;
-  height: 100%;
-  border-right: 1px solid gray;
-  padding: 16px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-`;
-
-const LeftCenter = styled.div`
-  width: 100%;
-  height: calc(100% - 48px - 112px);
-`;
-
 const I = styled.i`
   font-size: 12px;
-  margin-top: 16px;
   * {
     font-size: 12px;
   }
-`;
-
-const Right = styled.div`
-  width: 50%;
-  height: 100%;
-  padding: 16px;
-  box-sizing: border-box;
-`;
-
-const RightCenter = styled.div`
-  width: 100%;
-  height: calc(100% - 48px);
 `;
 
 export default function Creator() {
@@ -53,7 +19,7 @@ export default function Creator() {
 
   const [data, setData] = useState(prepare(task.body));
   const [showInvalid, setShowInvalid] = useState(false);
-
+  const [tab, setTab] = useState("edit");
   const [showSaveDialog, setShowSaveDialog] = useState(false);
 
   let { id } = useParams();
@@ -105,68 +71,76 @@ export default function Creator() {
     [task, id, history]
   );
 
+  console.log(tab);
+
   return (
-    <Box>
-      <Left>
-        <span style={{ display: "flex", alignItems: "center" }}>
-          <h1>Редактирование |</h1>
-          &nbsp;
-          <input
-            type="button"
-            value="К списку"
-            onClick={() => history.push("/list")}
-          />
-          &nbsp;
-          <input type="button" value="Сохранить" onClick={handleShowDialog} />
-        </span>
-        <LeftCenter>
-          <Redactor onChange={handle} value={task.body} />
-        </LeftCenter>
-        <I>
-          Выделите текст или область.
-          <ul>
-            <li>
-              Нажмите <b>CTRL+Q</b> - пропущеные буквы
-            </li>
-            <li>
-              Нажмите <b>CTRL+W</b> - слитно/раздельно
-            </li>
-          </ul>
-        </I>
-      </Left>
-      <Right>
-        <span style={{ display: "flex", alignItems: "center" }}>
-          <h1>Предпросмотр |</h1>
-          &nbsp;
-          <label
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
+    <>
+      <Card
+        footer={
+          <Groups justifyContent="flex-end">
+            {tab === "edit" && (
+              <I>
+                Выделите текст или область.
+                <ul>
+                  <li>
+                    Нажмите <b>CTRL+Q</b> - пропущеные буквы
+                  </li>
+                  <li>
+                    Нажмите <b>CTRL+W</b> - слитно/раздельно
+                  </li>
+                </ul>
+              </I>
+            )}
+            <Button design="accent" onClick={handleShowDialog}>
+              Сохранить
+            </Button>
+          </Groups>
+        }
+      >
+        <Card.Subtitle>
+          <Tabs value={tab} onChange={(e, value) => setTab(value)}>
+            <Tabs.Tab value={"edit"}>Редактирование</Tabs.Tab>
+            <Tabs.Tab value={"preview"}>Предпросмотр</Tabs.Tab>
+          </Tabs>
+        </Card.Subtitle>
+        {tab === "edit" && (
+          <Groups
+            design="vertical"
+            style={{ paddingTop: "16px", paddingBottom: "16px" }}
           >
-            <input
-              type="checkbox"
-              value={showInvalid}
-              onChange={handleCheckbox}
-            />
-            &nbsp;
-            <span>Показать ошибки</span>
-          </label>
-        </span>
-        <RightCenter>
-          <Container
-            data={data}
-            showInvalid={showInvalid}
-            onChange={handleChange}
-          />
-        </RightCenter>
-      </Right>
-      {showSaveDialog && (
-        <Modal onClose={() => setShowSaveDialog(false)}>
-          <SaveTaskForm onOk={handleSave} name={task.name} />
-        </Modal>
-      )}
-    </Box>
+            <div style={{ width: "1024px", height: "608px" }}>
+              <Redactor onChange={handle} value={task.body} />
+            </div>
+          </Groups>
+        )}
+        {tab === "preview" && (
+          <Groups
+            design="vertical"
+            style={{ paddingTop: "16px", paddingBottom: "16px" }}
+          >
+            <Switcher checked={showInvalid} onChange={handleCheckbox}>
+              Показать ошибки
+            </Switcher>
+            <div style={{ width: "1024px", height: "608px" }}>
+              <Container
+                data={data}
+                showInvalid={showInvalid}
+                onChange={handleChange}
+              />
+            </div>
+          </Groups>
+        )}
+      </Card>
+      <Modal isOpen={showSaveDialog} onClose={() => setShowSaveDialog(false)}>
+        <Modal.Layout>
+          <Modal.Head>
+            <Modal.Title>Добавить задание</Modal.Title>
+          </Modal.Head>
+          <Modal.Body>
+            <SaveTaskForm onOk={handleSave} name={task.name} />
+          </Modal.Body>
+        </Modal.Layout>
+      </Modal>
+    </>
   );
 }

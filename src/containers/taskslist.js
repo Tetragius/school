@@ -1,100 +1,87 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import { useHistory } from "react-router-dom";
+import React, { useCallback, useEffect, useState } from "react";
+import { useHistory, useParams } from "react-router-dom";
+import { Card, Button, Groups, Grid, Drawer, Modal } from "vienna-ui";
 import { db } from "../App";
 import { Container } from "../components/container";
 import { prepare } from "../components/readctor";
-
-const Box = styled.div`
-  display: flex;
-  width: 100%;
-  height: 100%;
-`;
-
-const Left = styled.div`
-  width: 50%;
-  height: 100%;
-  border-right: 1px solid gray;
-  padding: 16px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-`;
-
-const LeftCenter = styled.div`
-  width: 100%;
-  height: calc(100% - 48px);
-  display: flex;
-  flex-direction: column;
-`;
-
-const Item = styled.div`
-  border: 1px solid gray;
-  box-sizing: border-box;
-  padding: 8px;
-  transition: all 0.2s;
-  cursor: pointer;
-  margin-bottom: 8px;
-  &:hover {
-    background: #c9c9c9;
-  }
-`;
-
-const Right = styled.div`
-  width: 50%;
-  height: 100%;
-  padding: 16px;
-  box-sizing: border-box;
-`;
-
-const RightCenter = styled.div`
-  width: 100%;
-  height: calc(100% - 48px);
-`;
+import Creator from "./creator";
 
 export default function TasksList() {
   const [list, setList] = useState([]);
 
+  const [showDrawer, setShowDrawer] = useState(false);
   const [item, setItem] = useState(null);
 
   const history = useHistory();
+  const { edit } = useParams();
 
   useEffect(() => {
     db.getTasks().then(setList);
+  }, [edit]);
+
+  const openPreview = useCallback((item) => {
+    setShowDrawer(true);
+    setItem(item);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    history.push("/list");
+  }, []);
+
+  const removeHandler = useCallback((id) => {
+    db.removeTask(id).then(() => db.getTasks().then(setList));
   }, []);
 
   return (
-    <Box>
-      <Left>
-        <span style={{ display: "flex", alignItems: "center" }}>
-          <h1>Задания |</h1>
-          &nbsp;
-          <input
-            type="button"
-            value="Добавить"
-            onClick={() => history.push("/edit")}
-          />
-        </span>
-        <LeftCenter>
+    <Grid.Row align="center">
+      <Grid.Col size={10}>
+        <Groups design="vertical" style={{ padding: "16px" }}>
+          <Card>
+            <Groups justifyContent="flex-end">
+              <Button
+                design="accent"
+                onClick={() => history.push("/list/edit")}
+              >
+                Добавить
+              </Button>
+            </Groups>
+          </Card>
           {list.map((item, idx) => (
-            <Item
-              key={idx}
-              onDoubleClick={() => history.push(`/edit/${item.id}`)}
-              onClick={() => setItem(prepare(item.body))}
-            >
-              {item.name}
-            </Item>
+            <Card key={idx} title={item.name}>
+              <Groups justifyContent="flex-end">
+                <Button
+                  design="accent"
+                  onClick={() => history.push(`/list/edit/${item.id}`)}
+                >
+                  Редактировать
+                </Button>
+                <Button onClick={() => openPreview(item)}>Предпросмотр</Button>
+                <Button
+                  design="critical"
+                  onClick={() => removeHandler(item.id)}
+                >
+                  Удалить
+                </Button>
+              </Groups>
+            </Card>
           ))}
-        </LeftCenter>
-      </Left>
-      <Right>
-        <span>
-          <h1>Предпросмотр</h1>
-        </span>
-        <RightCenter>
-          {item && <Container data={item} showInvalidƒ />}
-        </RightCenter>
-      </Right>
-    </Box>
+        </Groups>
+      </Grid.Col>
+      <Drawer isOpen={showDrawer} onClose={() => setShowDrawer(false)}>
+        {item && (
+          <Drawer.Layout>
+            <Drawer.Head>
+              <Drawer.Title>{item?.name}</Drawer.Title>
+            </Drawer.Head>
+            <Drawer.Body>
+              <Container data={prepare(item.body)} showInvalid />
+            </Drawer.Body>
+          </Drawer.Layout>
+        )}
+      </Drawer>
+      <Modal isOpen={!!edit} onClose={closeModal}>
+        <Creator />
+      </Modal>
+    </Grid.Row>
   );
 }
