@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { Textarea } from "vienna-ui";
 
 const getType = (str) => {
@@ -66,6 +66,7 @@ export const prepare = (str, withSign = true) => {
 
 export const Redactor = (props) => {
   const { onChange, value, withSign = true } = props;
+  const ref = useRef();
 
   const handle = useCallback(
     (e) => {
@@ -73,6 +74,10 @@ export const Redactor = (props) => {
     },
     [onChange, withSign]
   );
+
+  useEffect(() => {
+    onChange(ref.current?.value, prepare(ref.current?.value, withSign));
+  }, [withSign]);
 
   const handleKey = useCallback(
     (e) => {
@@ -94,7 +99,8 @@ export const Redactor = (props) => {
 
   return (
     <Textarea
-      style={{ minHeight: "100%" }}
+      ref={ref}
+      style={{ minHeight: "100%", maxHeight: "100%" }}
       onKeyDown={handleKey}
       onChange={handle}
       value={value}

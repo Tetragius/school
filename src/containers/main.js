@@ -34,13 +34,19 @@ export default function Main() {
   return (
     <div style={{ display: "flex", height: "100%", flexDirection: "column" }}>
       <Header logo={<Animal size="xl" />} action={headActions} />
-      <div style={{ flexGrow: "1", display: "flex" }}>
+      <div
+        style={{
+          height: "calc(100% - 80px)",
+          overflow: "hidden",
+          display: "flex"
+        }}
+      >
         {userId && (
           <div>
             <Route path="/" component={Menu} />
           </div>
         )}
-        <div style={{ flexGrow: "1" }}>
+        <div style={{ flexGrow: "1", overflow: "auto" }}>
           <Grid.Row align="center" style={{ height: "100%" }}>
             <Grid.Col size={12}>
               {isAdmin && (
