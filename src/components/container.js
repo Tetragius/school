@@ -70,6 +70,7 @@ export const Container = (props) => {
           />
         );
       }
+      return "";
     });
   }, [data, update, showInvalid]);
 

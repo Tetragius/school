@@ -3,7 +3,7 @@ import { useHistory, useParams } from "react-router-dom";
 import { Card, Button, Groups, Grid, Drawer, Modal } from "vienna-ui";
 import { db } from "../App";
 import { Container } from "../components/container";
-import { prepare } from "../components/readctor";
+import { prepare } from "../components/redactor";
 import Creator from "./creator";
 
 export default function TasksList() {
@@ -26,7 +26,7 @@ export default function TasksList() {
 
   const closeModal = useCallback(() => {
     history.push("/list");
-  }, []);
+  }, [history]);
 
   const removeHandler = useCallback((id) => {
     db.removeTask(id).then(() => db.getTasks().then(setList));

@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { Card, Groups, Button } from "vienna-ui";
 import { useParams } from "react-router-dom";
 import { Container } from "../components/container";
-import { prepare } from "../components/readctor";
+import { prepare } from "../components/redactor";
 import { db } from "../App";
 import { useAuth } from "../services/Auth";
 

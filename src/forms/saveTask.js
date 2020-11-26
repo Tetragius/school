@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { Input, Button, Groups, FormField, Spinner } from "vienna-ui";
+import { Input, Button, Groups, FormField } from "vienna-ui";
 
 export const SaveTaskForm = (props) => {
   const { onOk, name } = props;

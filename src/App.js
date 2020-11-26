@@ -4,7 +4,6 @@ import { Body } from "vienna-ui";
 import Main from "./containers/main";
 import { DB } from "./services/DB";
 
-import "./styles.css";
 import { AuthProvider } from "./services/Auth";
 
 export const db = new DB();

@@ -3,7 +3,7 @@ import { Card, Switcher, Modal, Button, Tabs, Groups, Hint } from "vienna-ui";
 import styled from "styled-components";
 import { useParams, useHistory } from "react-router-dom";
 import { Container } from "../components/container";
-import { Redactor, prepare } from "../components/readctor";
+import { Redactor, prepare } from "../components/redactor";
 import { SaveTaskForm } from "../forms/saveTask";
 import { db } from "../App";
 
