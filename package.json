@@ -1,11 +1,8 @@
 {
-  "name": "react",
+  "name": "school",
   "version": "1.0.0",
-  "description": "React example starter project",
-  "keywords": [
-    "react",
-    "starter"
-  ],
+  "description": "",
+  "keywords": [],
   "main": "src/index.js",
   "dependencies": {
     "history": "5.0.0",
@@ -14,7 +11,8 @@
     "react-router": "5.2.0",
     "react-router-dom": "5.2.0",
     "react-scripts": "3.4.3",
-    "styled-components": "5.2.0"
+    "styled-components": "5.2.0",
+    "vienna-ui": "1.0.4"
   },
   "devDependencies": {
     "typescript": "3.8.3"

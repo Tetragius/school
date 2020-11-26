@@ -40,7 +40,13 @@ export const Container = (props) => {
           />
         );
       }
-      if (type === "sign" || type === "whitespace") {
+      if (type === "whitespace") {
+        return unescape("%u00a0");
+      }
+      if (type === "newline") {
+        return <br key={idx} />;
+      }
+      if (type === "sign" || type === "word") {
         return (
           <Sign
             key={idx}
@@ -52,16 +58,18 @@ export const Container = (props) => {
           />
         );
       }
-      return (
-        <Space
-          key={idx}
-          onChange={update}
-          id={idx}
-          maxLength={maxLength}
-          invalid={showInvalid && value !== correctValue}
-          value={value}
-        />
-      );
+      if (type === "space") {
+        return (
+          <Space
+            key={idx}
+            onChange={update}
+            id={idx}
+            maxLength={maxLength}
+            invalid={showInvalid && value !== correctValue}
+            value={value}
+          />
+        );
+      }
     });
   }, [data, update, showInvalid]);
 

@@ -1,25 +1,20 @@
 import React, { useCallback } from "react";
-import styled from "styled-components";
-
-const Textarea = styled.textarea`
-  font-size: 18px;
-  padding: 16px;
-  height: 100%;
-  width: 100%;
-  resize: none;
-  border: none;
-  outline: none;
-  box-sizing: border-box;
-`;
+import { Textarea } from "vienna-ui";
 
 const getType = (str) => {
-  const regexp = /[а-я\]}]/gim;
+  const regexpWord = /[а-я\]}]/gim;
+  const regexpNL = /\n/gim;
+  const regexpWhiteSpace = / /gim;
   switch (str[0]) {
     case "[":
       return "missed";
     case "{":
       return "space";
-    case String(str[0].match(regexp)):
+    case String(str[0].match(regexpWord)):
+      return "word";
+    case String(str[0].match(regexpNL)):
+      return "newline";
+    case String(str[0].match(regexpWhiteSpace)):
       return "whitespace";
     default:
       return "sign";
@@ -29,7 +24,7 @@ const getType = (str) => {
 const getCorrectValue = (type, str) => {
   switch (type) {
     case "sign":
-      return str;
+      return str.trim();
     case "missed":
     case "space":
       return str.substring(1, str.length - 1);
@@ -39,7 +34,7 @@ const getCorrectValue = (type, str) => {
 };
 
 export const prepare = (str) => {
-  const regexp = /\[.*?\]|\{.*?\}|[,:\-;"]|[а-я] /gim;
+  const regexp = /\[.*?\]|\{.*?\}|[,:\-;"] |[а-я]+ | |\n/gim;
   let old = 0;
   let tmp = regexp.exec(str);
   const tmpData = [];
@@ -47,19 +42,17 @@ export const prepare = (str) => {
   while (tmp) {
     tmpData.push(str.substring(old, tmp.index));
     const type = getType(tmp[0]);
-    if (type === "whitespace") {
-      tmpData[tmpData.length - 1] += tmp[0][0];
+    if (type === "word") {
+      tmpData[tmpData.length - 1] += tmp[0]?.trim();
     }
-    if (type !== "string") {
-      tmpData.push({
-        type,
-        value: "",
-        maxLength: type === "missed" ? tmp[0].length - 1 : 1,
-        correctValue: getCorrectValue(type, tmp[0])
-      });
-      if (type === "sign" || type === "whitespace") {
-        tmpData.push(" ");
-      }
+    tmpData.push({
+      type,
+      value: "",
+      maxLength: type === "missed" ? tmp[0].length - 1 : 1,
+      correctValue: getCorrectValue(type, tmp[0])
+    });
+    if (type === "sign" || type === "word") {
+      tmpData.push(" ");
     }
     old = regexp.lastIndex;
     tmp = regexp.exec(str);
@@ -97,5 +90,12 @@ export const Redactor = (props) => {
     [onChange]
   );
 
-  return <Textarea onKeyDown={handleKey} onChange={handle} value={value} />;
+  return (
+    <Textarea
+      style={{ minHeight: "100%" }}
+      onKeyDown={handleKey}
+      onChange={handle}
+      value={value}
+    />
+  );
 };
