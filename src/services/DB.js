@@ -5,7 +5,7 @@ export class DB {
 
   async init() {
     return new Promise((resolve, reject) => {
-      this.openRequest = indexedDB.open("school", 5);
+      this.openRequest = indexedDB.open("school", 6);
       this.openRequest.onsuccess = this.success.bind(this, resolve);
       this.openRequest.onupgradeneeded = this.upgradeneeded.bind(this);
     });
@@ -25,10 +25,19 @@ export class DB {
       });
     }
     if (!this.db.objectStoreNames.contains("students")) {
-      this.db.createObjectStore("students", {
+      let students = this.db.createObjectStore("students", {
         keyPath: "id",
         autoIncrement: true
       });
+      students.createIndex("login_idx", "login");
+    }
+    if (!this.db.objectStoreNames.contains("teachers")) {
+      let teachers = this.db.createObjectStore("teachers", {
+        keyPath: "id",
+        autoIncrement: true
+      });
+      teachers.createIndex("login_idx", "login");
+      teachers.add({ id: "1", login: "teacher", pwd: "12345", isAdmin: true });
     }
     if (!this.db.objectStoreNames.contains("classes")) {
       let classes = this.db.createObjectStore("classes", {
@@ -223,5 +232,67 @@ export class DB {
         });
       };
     });
+  }
+
+  // auth
+
+  async getStudentsByLogin(login) {
+    console.log("getStudentsByLogin 1", login);
+    return new Promise((resolve, reject) => {
+      try {
+        console.log("getStudentsByLogin 1.1", login);
+        let transaction = this.db.transaction(["students"]);
+
+        console.log("getStudentsByLogin 1.2", login);
+        let students = transaction.objectStore("students");
+
+        console.log("getStudentsByLogin 1.3", login);
+        let studentLoginIndex = students.index("login_idx");
+        console.log("getStudentsByLogin 1.4", login);
+        let studentLoginReq = studentLoginIndex.getAll(login);
+
+        console.log("getStudentsByLogin 2", login);
+        studentLoginReq.onerror = console.log;
+        studentLoginReq.onsuccess = () => {
+          console.log("getStudentsByLogin 3", login, studentLoginReq.result);
+          resolve(studentLoginReq.result);
+        };
+      } catch (e) {
+        console.log(e);
+      }
+    });
+  }
+
+  async getTeachersByLogin(login) {
+    console.log("getTeachersByLogin 1", login);
+    return new Promise((resolve, reject) => {
+      let transaction = this.db.transaction(["teachers"]);
+
+      let teachers = transaction.objectStore("teachers");
+
+      let teacheLoginIndex = teachers.index("login_idx");
+      let teacherLoginReq = teacheLoginIndex.getAll(login);
+
+      console.log("getTeachersByLogin 2", login);
+      teacherLoginReq.onerror = reject;
+      teacherLoginReq.onsuccess = () => {
+        console.log("getTeachersByLogin 3", login, teacherLoginReq.result);
+        resolve(teacherLoginReq.result);
+      };
+    });
+  }
+
+  async auth(login, pwd) {
+    console.log("auth");
+    const students = await this.getStudentsByLogin(login);
+    const teachers = await this.getTeachersByLogin(login);
+    const all = [...students, ...teachers];
+    const data = all.find((a) => a.pwd === pwd);
+    console.log(data, login, pwd);
+    if (data) {
+      return data;
+    }
+
+    throw new Error();
   }
 }

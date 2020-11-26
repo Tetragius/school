@@ -1,4 +1,5 @@
 import React, { useContext, createContext, useState } from "react";
+import { db } from "../App";
 
 const AuthContext = createContext({});
 
@@ -8,6 +9,10 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [auth, setAuth] = useState({});
-  AuthProvider.setAuth = setAuth;
+  AuthProvider.auth = (login, pwd) =>
+    db.auth(login, pwd).then((data) => {
+      setAuth(data);
+      return data;
+    });
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 };

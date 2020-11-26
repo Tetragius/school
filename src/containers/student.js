@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import { Card, Grid, Groups, Button, Badge } from "vienna-ui";
 import { db } from "../App";
-import { AuthProvider } from "../services/Auth";
 
 export default function Student() {
   const [name, setName] = useState("");
@@ -12,7 +11,6 @@ export default function Student() {
   const history = useHistory();
 
   useEffect(() => {
-    AuthProvider.setAuth({ userId: id });
     db.getStudent(id).then((student) => {
       setName(student.name);
     });
