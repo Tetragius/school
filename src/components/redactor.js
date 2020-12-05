@@ -36,7 +36,7 @@ const getCorrectValue = (type, str) => {
 export const prepare = (str, withSign = true) => {
   const regexp = withSign
     ? /\[.*?\]|\{.*?\}|[,:\-;"] |[а-я]+ | |\n/gim
-    : /\[.*?\]|\{.*?\}[а-я]+ | |\n/gim;
+    : /\[.*?\]|\{.*?\}|[а-я]+ | |\n/gim;
   let old = 0;
   let tmp = regexp.exec(str);
   const tmpData = [];
