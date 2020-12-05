@@ -3,7 +3,6 @@ import { useHistory } from "react-router-dom";
 import { Route } from "react-router-dom";
 import { Grid, Header, Button, Groups } from "vienna-ui";
 import { Animal } from "vienna.icons";
-import Task from "./task";
 import { useAuth, AuthProvider } from "../services/Auth";
 import TasksList from "./taskslist";
 import Students from "./students";
@@ -38,7 +37,7 @@ export default function Main() {
         style={{
           height: "calc(100% - 80px)",
           overflow: "hidden",
-          display: "flex"
+          display: "flex",
         }}
       >
         {userId && (
@@ -57,7 +56,6 @@ export default function Main() {
               )}
               {userId && (
                 <>
-                  <Route path="/task/:id" component={Task} />
                   <Route path="/student" component={Student} />
                 </>
               )}

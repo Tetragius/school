@@ -1,9 +1,22 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Card, Modal, Grid, Groups, Drawer, Button, Badge } from "vienna-ui";
-import { db } from "../App";
+import {
+  getTasksForStudent,
+  getStudents,
+  addStudent,
+  removeStudent,
+  appendTaskToStudent,
+} from "../services/EP";
 import { AddStudentForm } from "../forms/addStudent";
 import { Container } from "../components/container";
 import { AddtaskToStudentForm } from "../forms/addTaskToStudent";
+
+const parseDate = (str) => {
+  return str.replace(
+    /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(:.*)/i,
+    "$3.$2.$1 $4:$5"
+  );
+};
 
 export default function Students() {
   const [studentId, setStudentId] = useState();
@@ -16,23 +29,18 @@ export default function Students() {
   const [showAddTaskDialog, setShowAddTaskDialog] = useState(false);
 
   useEffect(() => {
-    db.getStudents().then(setList);
+    getStudents().then(setList);
   }, []);
 
-  const handleSave = useCallback((data) => {
-    db.addStudent(data);
+  const handleSave = useCallback(async (data) => {
+    await addStudent(data);
     setShowSaveDialog(false);
-    db.getStudents().then(setList);
-    db.getClassByName(data.className).then((c) => {
-      if (!c) {
-        db.addClass(data.className);
-      }
-    });
+    getStudents().then(setList);
   }, []);
 
   const getTasks = useCallback((id) => {
     setStudentId(id);
-    db.getTasksForStudent(id).then(setTasks);
+    getTasksForStudent(id).then(setTasks);
   }, []);
 
   const showTasks = useCallback(
@@ -44,14 +52,14 @@ export default function Students() {
   );
 
   const removeHandler = useCallback((id) => {
-    db.removeStudent(id).then(() => db.getStudents().then(setList));
+    removeStudent(id).then(() => getStudents().then(setList));
   }, []);
 
   const handleAddTask = useCallback(
-    (taskId) => {
-      db.appendTaskToStudent(studentId, taskId);
+    async (taskId) => {
+      await appendTaskToStudent(studentId, taskId);
       setShowAddTaskDialog(false);
-      db.getTasksForStudent(studentId).then(setTasks);
+      getTasksForStudent(studentId).then(setTasks);
     },
     [studentId]
   );
@@ -112,7 +120,7 @@ export default function Students() {
                   key={idx}
                   title={task?.name}
                   footer={
-                    task.finished && (
+                    task.isFinished && (
                       <Button onClick={() => openCheck(task)}>
                         Просмотреть
                       </Button>
@@ -121,7 +129,9 @@ export default function Students() {
                 >
                   <Card.Subtitle>
                     <Badge>
-                      {task.finished ? "выполнено" : "не выполнено"}
+                      {task.isFinished
+                        ? `выполнено: ${parseDate(task.finishedOn)}`
+                        : "не выполнено"}
                     </Badge>
                   </Card.Subtitle>
                 </Card>

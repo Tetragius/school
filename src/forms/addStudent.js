@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { Search, Input, Button, Groups, FormField } from "vienna-ui";
-import { db } from "../App";
+import { getClassesByName } from "../services/EP";
 
 export const AddStudentForm = (props) => {
   const { onOk } = props;
@@ -20,15 +20,13 @@ export const AddStudentForm = (props) => {
 
   const handleClassName = useCallback((e, data) => {
     setClassName({ name: data.value.name ?? data.value });
-    if (!data.value.name) {
-      db.getClasses(data.value).then((val) => {
-        setSuggestsClass(
-          val.filter((v) =>
-            v.name.toLowerCase().startsWith(data.value.toLowerCase())
-          )
-        );
-      });
-    }
+    getClassesByName(data.value ?? "").then((val) => {
+      setSuggestsClass(
+        val.filter((v) =>
+          v.name.toLowerCase().startsWith(data?.value?.toLowerCase?.() ?? "")
+        )
+      );
+    });
   }, []);
 
   const handleClick = useCallback(

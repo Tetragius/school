@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import { Card, Button, Groups, Grid, Drawer, Modal } from "vienna-ui";
-import { db } from "../App";
 import { Container } from "../components/container";
 import { prepare } from "../components/redactor";
 import Creator from "./creator";
+import { getTasks, removeTask } from "../services/EP";
 
 export default function TasksList() {
   const [list, setList] = useState([]);
@@ -16,7 +16,7 @@ export default function TasksList() {
   const { edit } = useParams();
 
   useEffect(() => {
-    db.getTasks().then(setList);
+    getTasks().then(setList);
   }, [edit]);
 
   const openPreview = useCallback((item) => {
@@ -29,7 +29,7 @@ export default function TasksList() {
   }, [history]);
 
   const removeHandler = useCallback((id) => {
-    db.removeTask(id).then(() => db.getTasks().then(setList));
+    removeTask(id).then(() => getTasks().then(setList));
   }, []);
 
   return (

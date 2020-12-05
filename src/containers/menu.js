@@ -6,7 +6,7 @@ import { People, Document } from "vienna.icons";
 
 export default function Menu() {
   const history = useHistory();
-  const { isAdmin, id: userId } = useAuth();
+  const { isAdmin } = useAuth();
 
   return (
     <Sidebar header={null}>
@@ -32,7 +32,7 @@ export default function Menu() {
         <Sidebar.Item
           icon={<Document />}
           active={history.location.pathname.startsWith("/student")}
-          onClick={() => history.push(`/student/${userId}`)}
+          onClick={() => history.push(`/student`)}
         >
           Задания
         </Sidebar.Item>

@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useEffect } from "react";
 import { Select, Button, Groups, FormField } from "vienna-ui";
-import { db } from "../App";
+import { getTasks } from "../services/EP";
 
 export const AddtaskToStudentForm = (props) => {
   const { onOk } = props;
@@ -8,7 +8,7 @@ export const AddtaskToStudentForm = (props) => {
   const [item, setItem] = useState([]);
 
   useEffect(() => {
-    db.getTasks().then(setList);
+    getTasks().then(setList);
   }, []);
 
   const handleClick = useCallback((e, data) => {

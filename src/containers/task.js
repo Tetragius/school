@@ -1,38 +1,23 @@
 import React, { useEffect, useState, useCallback } from "react";
-import styled from "styled-components";
 import { Card, Groups, Button } from "vienna-ui";
-import { useParams } from "react-router-dom";
 import { Container } from "../components/container";
 import { prepare } from "../components/redactor";
-import { db } from "../App";
-import { useAuth } from "../services/Auth";
+import { getTask } from "../services/EP";
 
-const Box = styled.div`
-  padding: 16px;
-`;
-
-export default function Task() {
-  const [task, setTask] = useState();
+export const Task = ({ task, onSave }) => {
   const [data, setData] = useState();
-  const [showErrors, setShowErrors] = useState(false);
-  const { id } = useParams();
-  const { id: userId } = useAuth();
 
   useEffect(() => {
-    db.getTasksForStudent(userId).then((val) => {
-      const task = val.find((v) => v.finished && v.id === parseInt(id, 10));
-      if (task) {
-        setTask(task);
-        setData(task.result);
-        setShowErrors(true);
-      } else {
-        db.getTask(id).then((task) => {
-          setTask(task);
-          setData(prepare(task.body, task.withSign));
+    if (task) {
+      if (!task.isFinished) {
+        getTask(task.id).then((val) => {
+          setData(prepare(val.body, val.withSign));
         });
+      } else {
+        setData(task.result);
       }
-    });
-  }, [id, userId]);
+    }
+  }, [task]);
 
   const handleChange = useCallback(
     (value, idx) => {
@@ -43,32 +28,28 @@ export default function Task() {
   );
 
   const send = useCallback(() => {
-    setShowErrors(true);
-    db.updateTaskForStudent(userId, id, data);
-  }, [id, data, userId]);
+    onSave(data);
+  }, [data, onSave]);
+
+  const footer = (
+    <Groups justifyContent="flex-end">
+      <Button disabled={task?.isFinished} design="accent" onClick={send}>
+        Отправить
+      </Button>
+    </Groups>
+  );
 
   return (
-    <Box>
-      {task && data && (
-        <Groups design="vertical">
-          <Card title={task.name}>
-            <Card.Subtitle>
-              <Groups justifyContent="flex-end">
-                <Button disabled={showErrors} design="accent" onClick={send}>
-                  Отправить
-                </Button>
-              </Groups>
-            </Card.Subtitle>
-          </Card>
-          <Card>
-            <Container
-              data={data}
-              showInvalid={showErrors}
-              onChange={handleChange}
-            />
-          </Card>
-        </Groups>
-      )}
-    </Box>
+    <Card title={task?.name} footer={footer}>
+      <div style={{ width: "1024px", height: "608px" }}>
+        <Container
+          data={data || []}
+          showInvalid={task?.isFinished}
+          onChange={handleChange}
+        />
+      </div>
+    </Card>
   );
-}
+};
+
+export default Task;

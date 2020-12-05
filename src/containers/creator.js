@@ -5,7 +5,7 @@ import { useParams, useHistory } from "react-router-dom";
 import { Container } from "../components/container";
 import { Redactor, prepare } from "../components/redactor";
 import { SaveTaskForm } from "../forms/saveTask";
-import { db } from "../App";
+import { getTask, addTask, updatetask } from "../services/EP";
 
 const I = styled.i`
   font-size: 12px;
@@ -28,7 +28,7 @@ export default function Creator() {
 
   useEffect(() => {
     if (id) {
-      db.getTask(id).then((task) => {
+      getTask(id).then((task) => {
         setTask(task);
         setWithSign(task.withSign);
         setData(prepare(task.body, task.withSign));
@@ -63,9 +63,9 @@ export default function Creator() {
   const handleSave = useCallback(
     (name) => {
       if (!id) {
-        db.addTask(name, task.body, withSign);
+        addTask(name, task.body, withSign);
       } else {
-        db.updatetask(id, name, task.body, withSign);
+        updatetask(id, name, task.body, withSign);
       }
       setShowSaveDialog(false);
       history.push("/list");
