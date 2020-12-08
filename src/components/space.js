@@ -65,7 +65,7 @@ export const Space = (props) => {
     (e) => {
       onChange(value ? "" : " ", id);
     },
-    [value, id]
+    [value, id, onChange]
   );
 
   const focus = useCallback((e) => {

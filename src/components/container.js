@@ -72,7 +72,7 @@ export const Container = (props) => {
       }
       return "";
     });
-  }, [data, update, showInvalid]);
+  }, [data, update, showInvalid, withSign]);
 
   return <Box>{build()}</Box>;
 };
