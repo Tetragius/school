@@ -1,16 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
-import { Card, Button, Groups, Grid, Drawer, Modal } from "vienna-ui";
-import { Container } from "../components/container";
-import { prepare } from "../components/redactor";
+import { Card, Button, Groups, Grid, Modal } from "vienna-ui";
+import { Task } from "../components/task";
 import Creator from "./creator";
 import { getTasks, removeTask } from "../services/EP";
 
 export default function TasksList() {
   const [list, setList] = useState([]);
-
-  const [showDrawer, setShowDrawer] = useState(false);
-  const [item, setItem] = useState(null);
 
   const history = useHistory();
   const { edit } = useParams();
@@ -18,11 +14,6 @@ export default function TasksList() {
   useEffect(() => {
     getTasks().then(setList);
   }, [edit]);
-
-  const openPreview = useCallback((item) => {
-    setShowDrawer(true);
-    setItem(item);
-  }, []);
 
   const closeModal = useCallback(() => {
     history.push("/list");
@@ -46,39 +37,16 @@ export default function TasksList() {
               </Button>
             </Groups>
           </Card>
-          {list.map((item, idx) => (
-            <Card key={idx} title={item.name}>
-              <Groups justifyContent="flex-end">
-                <Button
-                  design="accent"
-                  onClick={() => history.push(`/list/edit/${item.id}`)}
-                >
-                  Редактировать
-                </Button>
-                <Button onClick={() => openPreview(item)}>Предпросмотр</Button>
-                <Button
-                  design="critical"
-                  onClick={() => removeHandler(item.id)}
-                >
-                  Удалить
-                </Button>
-              </Groups>
-            </Card>
+          {list.map((item) => (
+            <Task
+              key={item.id}
+              item={item}
+              onEdit={(id) => history.push(`/list/edit/${id}`)}
+              onRemove={removeHandler}
+            />
           ))}
         </Groups>
       </Grid.Col>
-      <Drawer isOpen={showDrawer} onClose={() => setShowDrawer(false)}>
-        {item && (
-          <Drawer.Layout>
-            <Drawer.Head>
-              <Drawer.Title>{item?.name}</Drawer.Title>
-            </Drawer.Head>
-            <Drawer.Body>
-              <Container data={prepare(item.body, item.withSign)} showInvalid />
-            </Drawer.Body>
-          </Drawer.Layout>
-        )}
-      </Drawer>
       <Modal isOpen={!!edit} onClose={closeModal}>
         <Creator />
       </Modal>

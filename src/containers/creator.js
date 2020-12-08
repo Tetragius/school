@@ -147,6 +147,7 @@ export default function Creator() {
               <Container
                 data={data}
                 showInvalid={showInvalid}
+                withSign={withSign}
                 onChange={handleChange}
               />
             </div>

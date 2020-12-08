@@ -13,7 +13,7 @@ const Box = styled.div`
 `;
 
 export const Container = (props) => {
-  const { data, showInvalid, onChange } = props;
+  const { data, showInvalid, onChange, withSign } = props;
 
   const update = useCallback(
     (value, idx) => {
@@ -46,7 +46,7 @@ export const Container = (props) => {
       if (type === "newline") {
         return <br key={idx} />;
       }
-      if (type === "sign" || type === "word") {
+      if (type === "sign" || (type === "word" && withSign)) {
         return (
           <Sign
             key={idx}

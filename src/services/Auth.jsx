@@ -15,6 +15,9 @@ export const AuthProvider = ({ children }) => {
   );
   AuthProvider.auth = (login, pwd) => {
     return logIn(login, pwd).then((data) => {
+      if (data.error) {
+        throw "";
+      }
       localStorage.setItem("user", JSON.stringify(data));
       setAuth(data);
       return data;

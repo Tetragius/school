@@ -20,11 +20,10 @@ const Input = styled.input`
   border: none;
   padding: 0;
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
+  height: 16px;
   text-align: center;
   width: 100%;
-  height: 100%;
-  font-family: Arial;
   background-color: transparent;
 `;
 
@@ -38,6 +37,7 @@ export const Missed = (props) => {
     },
     [onChange, id]
   );
+
 
   const focus = useCallback((e) => {
     setFocused(true);

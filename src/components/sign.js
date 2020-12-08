@@ -22,11 +22,10 @@ const Input = styled.input`
   border: none;
   padding: 0;
   margin: 0;
-  font-size: 18px;
   text-align: center;
   width: 100%;
-  height: 100%;
-  font-family: Arial;
+  font-size: 16px;
+  height: 16px;
   background-color: transparent;
 `;
 

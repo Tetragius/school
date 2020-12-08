@@ -18,11 +18,16 @@ app.get("/tasks", (req, res) => {
     .then(async (client) => {
       const db = client.db(mongoDbName);
       const tasks = db.collection("tasks");
-      return (await tasks.find().toArray()).map(({ name, body, _id }) => ({
-        name,
-        body,
-        id: _id,
-      }));
+      return (await tasks.find().toArray()).map(
+        ({ name, body, _id, createOn, modifyOn, withSign }) => ({
+          name,
+          body,
+          createOn,
+          modifyOn,
+          withSign,
+          id: _id,
+        })
+      );
     })
     .then((tasks) => res.json(tasks))
     .catch((error) => res.json({ error }));
@@ -87,9 +92,11 @@ app.get("/students", (req, res) => {
       const db = client.db(mongoDbName);
       const students = db.collection("students");
       return (await students.find().toArray()).map(
-        ({ name, className, _id }) => ({
+        ({ name, className, pwd, _id, visitedOn }) => ({
           name,
+          pwd,
           className,
+          visitedOn,
           id: _id,
         })
       );
@@ -145,7 +152,7 @@ app.get("/students/:id", (req, res) => {
 
 app.post("/students/:id", (req, res) => {
   const { id } = req.params;
-  const { taskId, result } = req.body;
+  const { taskId, result, comment, mark } = req.body;
   MongoClient.connect(mongoUrl)
     .then(async (client) => {
       const db = client.db(mongoDbName);
@@ -159,14 +166,20 @@ app.post("/students/:id", (req, res) => {
         const idx = studentTasks.findIndex(
           (st) => st.id.toString() === taskId.toString()
         );
-        studentTasks[idx]["result"] = result;
-        studentTasks[idx]["finishedOn"] = new Date();
-        studentTasks[idx]["isFinished"] = true;
+        if (mark) {
+          studentTasks[idx]["mark"] = mark;
+          studentTasks[idx]["comment"] = comment;
+        } else {
+          studentTasks[idx]["result"] = result;
+          studentTasks[idx]["finishedOn"] = new Date();
+          studentTasks[idx]["isFinished"] = true;
+        }
       } else {
         studentTasks.push({
           id: task._id,
           name: task.name,
           isFinished: false,
+          withSign: task.withSign,
           assignOn: new Date(),
         });
       }
@@ -217,9 +230,21 @@ app.post("/login", (req, res) => {
       const db = client.db(mongoDbName);
       const teachers = db.collection("teachers");
       const students = db.collection("students");
-      const teacher = await teachers.findOne(req.body);
-      const student = await students.findOne(req.body);
-      return teacher || student;
+      const teacher = await teachers.findOneAndUpdate(
+        req.body,
+        {
+          $set: { visitedOn: new Date() },
+        },
+        { returnNewDocument: true }
+      );
+      const student = await students.findOneAndUpdate(
+        req.body,
+        {
+          $set: { visitedOn: new Date() },
+        },
+        { returnNewDocument: true }
+      );
+      return teacher.value || student.value;
     })
     .then(({ name, isAdmin, _id }) => res.json({ name, isAdmin, id: _id }))
     .catch((error) => res.json({ error }));

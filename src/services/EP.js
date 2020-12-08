@@ -1,4 +1,5 @@
-const url = "http://localhost:3030";
+const url = "http://tetragius.ddns.net:3030";
+// const url = "http://localhost:3030";
 
 // classes
 
@@ -86,10 +87,16 @@ export const appendTaskToStudent = async (studentId, taskId) => {
   }).then((r) => r.json());
 };
 
-export const updateTaskForStudent = async (studentId, taskId, result) => {
+export const updateTaskForStudent = async (
+  studentId,
+  taskId,
+  result,
+  comment,
+  mark
+) => {
   return fetch(`${url}/students/${studentId}`, {
     method: "post",
-    body: JSON.stringify({ taskId, result }),
+    body: JSON.stringify({ taskId, result, comment, mark }),
     headers: {
       "Content-Type": "application/json",
     },

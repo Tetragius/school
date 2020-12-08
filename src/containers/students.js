@@ -6,16 +6,15 @@ import {
   addStudent,
   removeStudent,
   appendTaskToStudent,
+  updateTaskForStudent,
 } from "../services/EP";
 import { AddStudentForm } from "../forms/addStudent";
-import { Container } from "../components/container";
+import { Student } from "../components/student";
 import { AddtaskToStudentForm } from "../forms/addTaskToStudent";
+import { Task } from "./task";
 
 const parseDate = (str) => {
-  return str.replace(
-    /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(:.*)/i,
-    "$3.$2.$1 $4:$5"
-  );
+  return str.replace(/(\d{4})-(\d{2})-(\d{2})T(.*)/i, "$3.$2.$1");
 };
 
 export default function Students() {
@@ -69,6 +68,20 @@ export default function Students() {
     setTask(task);
   }, []);
 
+  const updateTask = useCallback(
+    async (_, comment, mark) => {
+      await updateTaskForStudent(
+        studentId,
+        task.id,
+        task.result,
+        comment,
+        mark
+      );
+      showCheck(false);
+    },
+    [studentId, task]
+  );
+
   return (
     <Grid.Row align="center">
       <Grid.Col size={10}>
@@ -83,28 +96,12 @@ export default function Students() {
             </Card.Title>
           </Card>
           {list.map((item, idx) => (
-            <Card
-              key={idx}
-              footer={
-                <Groups justifyContent="flex-end">
-                  <Button onClick={() => showTasks(item.id)}>Задания</Button>
-                  <Button
-                    design="critical"
-                    onClick={() => removeHandler(item.id)}
-                  >
-                    Удалить
-                  </Button>
-                </Groups>
-              }
-            >
-              <Card.Title>{item.name}</Card.Title>
-              <Card.Subtitle>
-                <Groups>
-                  <Badge>класс: {item.className}</Badge>
-                  <Badge>пароль: {item.pwd}</Badge>
-                </Groups>
-              </Card.Subtitle>
-            </Card>
+            <Student
+              key={item.id}
+              item={item}
+              onShowTask={showTasks}
+              onRemove={removeHandler}
+            />
           ))}
         </Groups>
       </Grid.Col>
@@ -128,11 +125,14 @@ export default function Students() {
                   }
                 >
                   <Card.Subtitle>
-                    <Badge>
-                      {task.isFinished
-                        ? `выполнено: ${parseDate(task.finishedOn)}`
-                        : "не выполнено"}
-                    </Badge>
+                    <Groups>
+                      <Badge>
+                        {task.isFinished
+                          ? `выполнено: ${parseDate(task.finishedOn)}`
+                          : "не выполнено"}
+                      </Badge>
+                      {task.mark && <Badge>{task.mark}</Badge>}
+                    </Groups>
                   </Card.Subtitle>
                 </Card>
               ))}
@@ -169,16 +169,7 @@ export default function Students() {
         </Modal.Layout>
       </Modal>
       <Modal isOpen={check} onClose={() => showCheck(false)}>
-        <Modal.Layout>
-          <Modal.Head>
-            <Modal.Title>{task?.name}</Modal.Title>
-          </Modal.Head>
-          <Modal.Body>
-            <div style={{ width: "1024px", height: "608px" }}>
-              <Container data={task?.result} showInvalid />
-            </div>
-          </Modal.Body>
-        </Modal.Layout>
+        <Task isAdmin task={task} onSave={updateTask} />
       </Modal>
     </Grid.Row>
   );

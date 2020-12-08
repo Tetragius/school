@@ -15,7 +15,6 @@ export default function Main() {
   const { id: userId, isAdmin, name } = useAuth();
 
   useEffect(() => {
-    console.log(userId);
     if (!userId) {
       history.replace("/login");
     }

@@ -1,15 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Card, Grid, Groups, Button, Badge, Modal } from "vienna-ui";
+import { Grid, Groups, Modal } from "vienna-ui";
 import { getTasksForStudent, updateTaskForStudent } from "../services/EP";
 import { useAuth } from "../services/Auth";
 import Task from "./task";
-
-const parseDate = (str) => {
-  return str.replace(
-    /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(:.*)/i,
-    "$3.$2.$1 $4:$5"
-  );
-};
+import { StudentTak } from "../components/studentTask";
 
 export default function Student() {
   const [tasks, setTasks] = useState([]);
@@ -40,23 +34,7 @@ export default function Student() {
       <Grid.Col size={10}>
         <Groups design="vertical">
           {tasks.map((task, idx) => (
-            <Card
-              title={task.name}
-              footer={
-                <Groups justifyContent="flex-end">
-                  <Button onClick={() => showModal(task)}>
-                    {!task.isFinished ? "Выполнить" : "Просмотреть"}
-                  </Button>
-                </Groups>
-              }
-              key={idx}
-            >
-              <Badge>
-                {task.isFinished
-                  ? `выполнено: ${parseDate(task.finishedOn)}`
-                  : "новое"}
-              </Badge>
-            </Card>
+            <StudentTak key={task.id} item={task} onOpen={showModal} />
           ))}
         </Groups>
       </Grid.Col>

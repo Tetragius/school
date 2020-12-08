@@ -15,7 +15,6 @@ const Box = styled.div`
     position: absolute;
     width: 100%;
     height: 18px;
-    top: 5px;
     background-color: ${({ focused }) =>
       (!focused && "rgb(25 118 210 / 0.1)") || "rgb(25 118 210 / 0.4)"};
     background-color: ${({ invalid }) => invalid && "rgb(210 118 25 / 0.5)"};
@@ -32,6 +31,7 @@ const Box = styled.div`
     font-weight: bold;
     font-size: 12px;
     color: #1976d2;
+    cursor: pointer;
   }
 `;
 
@@ -43,11 +43,10 @@ const Input = styled.input`
   border: none;
   padding: 0;
   margin: 0;
-  font-size: 18px;
-  font-family: Arial;
   background-color: transparent;
   width: 100%;
-  height: 100%;
+  font-size: 16px;
+  height: 16px;
 `;
 
 export const Space = (props) => {
@@ -62,6 +61,13 @@ export const Space = (props) => {
     [onChange, id]
   );
 
+  const handleClick = useCallback(
+    (e) => {
+      onChange(value ? "" : " ", id);
+    },
+    [value, id]
+  );
+
   const focus = useCallback((e) => {
     setFocused(true);
   }, []);
@@ -71,7 +77,12 @@ export const Space = (props) => {
   }, []);
 
   return (
-    <Box value={value} focused={focused} invalid={invalid}>
+    <Box
+      value={value}
+      focused={focused}
+      invalid={invalid}
+      onClick={handleClick}
+    >
       {value ? "_" : ""}
       <Input
         spellCheck={false}
