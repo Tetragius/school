@@ -8,12 +8,17 @@ const mongoUrl = "mongodb://localhost:27017";
 const mongoDbName = "test";
 
 const app = express();
-const port = 3030;
+const port = 3000;
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname + "/../build")));
 
-app.get("/tasks", (req, res) => {
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname + "/../build/index.html"));
+});
+
+app.get("/api/tasks", (req, res) => {
   MongoClient.connect(mongoUrl)
     .then(async (client) => {
       const db = client.db(mongoDbName);
@@ -33,7 +38,7 @@ app.get("/tasks", (req, res) => {
     .catch((error) => res.json({ error }));
 });
 
-app.put("/tasks", (req, res) => {
+app.put("/api/tasks", (req, res) => {
   const { name, body, withSign } = req.body;
   MongoClient.connect(mongoUrl)
     .then(async (client) => {
@@ -49,7 +54,7 @@ app.put("/tasks", (req, res) => {
     .then(() => res.send());
 });
 
-app.post("/tasks", (req, res) => {
+app.post("/api/tasks", (req, res) => {
   const { id, body, name, withSign } = req.body;
   MongoClient.connect(mongoUrl)
     .then(async (client) => {
@@ -63,7 +68,7 @@ app.post("/tasks", (req, res) => {
     .then(() => res.send());
 });
 
-app.delete("/tasks", (req, res) => {
+app.delete("/api/tasks", (req, res) => {
   const { id } = req.body;
   MongoClient.connect(mongoUrl)
     .then(async (client) => {
@@ -74,7 +79,7 @@ app.delete("/tasks", (req, res) => {
     .then(() => res.send());
 });
 
-app.get("/tasks/:id", (req, res) => {
+app.get("/api/tasks/:id", (req, res) => {
   const { id } = req.params;
   MongoClient.connect(mongoUrl)
     .then(async (client) => {
@@ -86,7 +91,7 @@ app.get("/tasks/:id", (req, res) => {
     .catch((error) => res.json({ error }));
 });
 
-app.get("/students", (req, res) => {
+app.get("/api/students", (req, res) => {
   MongoClient.connect(mongoUrl)
     .then(async (client) => {
       const db = client.db(mongoDbName);
@@ -105,7 +110,7 @@ app.get("/students", (req, res) => {
     .catch((error) => res.json({ error }));
 });
 
-app.put("/students", (req, res) => {
+app.put("/api/students", (req, res) => {
   const { name, className, pwd } = req.body;
   MongoClient.connect(mongoUrl)
     .then(async (client) => {
@@ -127,7 +132,7 @@ app.put("/students", (req, res) => {
     .then(() => res.send());
 });
 
-app.delete("/students", (req, res) => {
+app.delete("/api/students", (req, res) => {
   const { id } = req.body;
   MongoClient.connect(mongoUrl)
     .then(async (client) => {
@@ -138,7 +143,7 @@ app.delete("/students", (req, res) => {
     .then(() => res.send());
 });
 
-app.get("/students/:id", (req, res) => {
+app.get("/api/students/:id", (req, res) => {
   const { id } = req.params;
   MongoClient.connect(mongoUrl)
     .then(async (client) => {
@@ -150,7 +155,7 @@ app.get("/students/:id", (req, res) => {
     .catch((error) => res.json({ error }));
 });
 
-app.post("/students/:id", (req, res) => {
+app.post("/api/students/:id", (req, res) => {
   const { id } = req.params;
   const { taskId, result, comment, mark } = req.body;
   MongoClient.connect(mongoUrl)
@@ -195,7 +200,7 @@ app.post("/students/:id", (req, res) => {
     .then(() => res.json({}));
 });
 
-app.get("/students/:id/tasks", (req, res) => {
+app.get("/api/students/:id/tasks", (req, res) => {
   const { id } = req.params;
   MongoClient.connect(mongoUrl)
     .then(async (client) => {
@@ -207,7 +212,7 @@ app.get("/students/:id/tasks", (req, res) => {
     .catch((error) => res.json({ error }));
 });
 
-app.get("/classes/:name", (req, res) => {
+app.get("/api/classes/:name", (req, res) => {
   const { name } = req.params;
   MongoClient.connect(mongoUrl)
     .then(async (client) => {
@@ -224,7 +229,7 @@ app.get("/classes/:name", (req, res) => {
     .catch((error) => res.json({ error }));
 });
 
-app.post("/login", (req, res) => {
+app.post("/api/login", (req, res) => {
   MongoClient.connect(mongoUrl)
     .then(async (client) => {
       const db = client.db(mongoDbName);

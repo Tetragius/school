@@ -1,4 +1,4 @@
-const url = "http://tetragius.ddns.net:3030";
+const url = "http://tetragius.ddns.net/api";
 // const url = "http://localhost:3030";
 
 // classes
